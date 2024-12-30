@@ -1,14 +1,34 @@
 import os
-import ruamel.yaml
 import time
-
-yaml = ruamel.yaml.YAML(typ='rt')
-# yaml.indent(mapping=2, sequence=2, offset=0)
-yaml.preserve_quotes = True
+import subprocess
+import sys
 
 envs = ["DEV", "INT", "QA", "QAB", "QAG", "PF","PF1", "PF2", "PF3", "PF4", "UAT", "PP", "PN", "PROD"]
 
 data = None
+yaml =  None
+
+def install_package(package_name):
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", package_name])
+    except:
+        try:
+            subprocess.check_call([sys.executable, "-m", "pip3", "install", package_name])
+        except:
+            print(f"Failed to install {package_name}. Please install it manually.")
+
+def check_and_install(package_names):
+    for package_name in package_names:
+        try:
+            # Try importing the package
+            __import__(package_name)
+            print(f"{package_name} is already installed.")
+        except ImportError:
+            print(f"{package_name} is not installed. Installing...")
+            install_package(package_name)
+            # Try importing again after installation
+            __import__(package_name)
+            print(f"{package_name} has been installed successfully.")
 
 def addUpdateEntryInYamlFile():
     choice = input("1. Add in all environments\n2. Add in specific environmets\nEnter your choice: ")
@@ -92,6 +112,14 @@ def saveData(data):
     print("Data saved successfully in YAML file.")
 
 if __name__ == '__main__':
+
+    check_and_install('ruamel.yaml')
+
+    import ruamel.yaml
+
+    yaml = ruamel.yaml.YAML(typ='rt')
+    # yaml.indent(mapping=2, sequence=2, offset=0)
+    yaml.preserve_quotes = True
 
     YML_FILES = [f for f in os.listdir() if f.endswith(".yaml") or f.endswith(".yml")]
 
